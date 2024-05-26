@@ -1,5 +1,5 @@
-Amex - Script designed to clean and analyze my monthly amex statements. 
+amex_spend - Script designed to clean and analyze my monthly amex statements. 
 
-DiD15-19 - Differnces in Differences analysis
+differences_in_differneces - Differnces in Differences analysis
 
-Forecasting with Sarima - Forecasting Cashmere products with time-series-model
+forecasting_sales - Forecasting Cashmere products with time-series-model
