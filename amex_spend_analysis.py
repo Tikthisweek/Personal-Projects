@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Created on Tue Mar 12 14:00:14 2024
 
@@ -30,21 +32,19 @@ monthly_statement = cleanup(monthly_statement)
 
 
 def spendperday(statement):
-    spendbyday = pd.DataFrame()
-    spendbyday = statement.groupby("Date")["Amount"].sum().reset_index()
-    spendbyday.columns = ["Date", "Total_Spent"]
-    return spendbyday
-
+    spend_daily = pd.DataFrame()
+    spend_daily = statement.groupby("Date")["Amount"].sum().reset_index()
+    spend_daily.columns = ["Date", "Total_Spent"]
+    return spend_daily
 
 def spendbyvendor(statement):
-    spendbyvendor = pd.DataFrame()
-    spendbyvendor = statement.groupby("Description")["Amount"].sum().reset_index()
-    spendbyvendor.columns = ["Vendor", "Amount"]
-    total_spend = spendbyvendor.Amount.sum()
+    vendor_spend = pd.DataFrame()
+    vendor_spend= statement.groupby("Description")["Amount"].sum().reset_index()
+    vendor_spend.columns = ["Vendor", "Amount"]
+    total_spend = vendor_spend.Amount.sum()
     new_row = pd.DataFrame({"Vendor": "Total_Spend", "Amount": [total_spend]})
-    spendbyvendor = pd.concat([spendbyvendor, new_row], ignore_index=True)
-    return spendbyvendor
-
+    vendor_spend = pd.concat([vendor_spend, new_row], ignore_index=True)
+    return vendor_spend
 
 def format_numeric(x):
     if isinstance(x, (int, float)):
@@ -52,10 +52,10 @@ def format_numeric(x):
     return x
 
 
-spendbyvendor = spendbyvendor(monthly_statement)
-spendperday = spendperday(monthly_statement)
+vendorspendlist = spendbyvendor(monthly_statement)
+dailyspendlist = spendperday(monthly_statement)
 
-spendbyvendor.sort_values(by="Amount")
+vendorspendlist.sort_values(by="Amount")
 
 Excel_filepath = (
     "/Users/KartikPatel/Desktop/Automate_The_Boring_Stuff/monthly_statement/Cycle_Summary.xlsx"
@@ -66,8 +66,7 @@ statement_year = monthly_statement.Date[0].split("/")[2]
 
 with pd.ExcelWriter(Excel_filepath, mode="a") as writer:
     name = statement_month + "-" + statement_year + " Vendors"
-    spendbyvendor.to_excel(writer, sheet_name=name, index=False)
-
+    vendorspendlist .to_excel(writer, sheet_name=name, index=False)
 
 stats = monthly_statement.describe()
 stats = stats.applymap(format_numeric)
@@ -78,7 +77,7 @@ with pd.ExcelWriter(Excel_filepath, mode="a") as writer:
 
 with pd.ExcelWriter(Excel_filepath, mode="a") as writer:
     name = statement_month + "-" + statement_year + " Daily Spend"
-    spendperday.to_excel(writer, sheet_name=name, index=False)
+    dailyspendlist.to_excel(writer, sheet_name=name, index=False)
 
 workbook = openpyxl.load_workbook(Excel_filepath)
 border_style = Border(
@@ -125,8 +124,8 @@ for row in statssheet.iter_rows(min_row=2, min_col=2):
 workbook.save(Excel_filepath)
 
 plt.bar(
-    spendbyvendor.loc[spendbyvendor["Amount"] > 100, "Vendor"],
-    spendbyvendor.loc[spendbyvendor["Amount"] > 100, "Amount"],
+    vendorspendlist.loc[vendorspendlist["Amount"] > 100, "Vendor"],
+    vendorspendlist.loc[vendorspendlist["Amount"] > 100, "Amount"],
 )
 plt.xlabel("Vendor", fontsize=8)  # Adjust the font size here
 plt.ylabel("Amount ($)")
